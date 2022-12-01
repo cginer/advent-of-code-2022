@@ -6,7 +6,7 @@ library(tidyr)
 ################################################################################
 
 elf_calories <- function(filename){
-  
+
   data <- read.table(filename, blank.lines.skip = FALSE) %>%
     rename(calory_list = V1)
 
@@ -25,7 +25,13 @@ elf_calories <- function(filename){
     tail(1) %>%
     pull(total_calories)
 
-  return(the_most_calories)
+  total_top_three <- tidy_data %>%
+    arrange(total_calories) %>%
+    tail(3) %>%
+    pull(total_calories) %>%
+    sum()
+
+  return(list(most = the_most_calories, top_three = total_top_three))
 
 }
 
