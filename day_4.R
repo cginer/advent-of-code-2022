@@ -31,11 +31,10 @@ number_of_full_overlaps <- function(list_filename){
                                !is.na(`elf_1,elf_2`) ~ "partial_overlap",
                                TRUE ~ "none"))
 
-  fully_overlapping_pairs <- explicit_cleaning_list %>%
-    filter(overlap %in% "full_overlap") %>%
-    nrow()
+  overlap_summary <- explicit_cleaning_list %>%
+    count(overlap)
 
-  return(fully_overlapping_pairs)
+  return(overlap_summary)
 
 }
 
