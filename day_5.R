@@ -38,23 +38,21 @@ add_to_stack <- function(stack_vector, crate){
   return(updated_stack)
 }
 
-remove_last_from_stack <- function(stack_vector){
-
+remove_n_from_stack <- function(stack_vector, n){
   len <- length(stack_vector)
-  if (len > 1){
-    updated_stack_vector <- stack_vector[1:(len-1)]
-  } else if (len %in% 1) {
+  if (len > n){
+    updated_stack_vector <- stack_vector[1:(len-n)]
+  } else if (len %in% n) {
     updated_stack_vector <- ""
   } else {
-    print("The stack is empty")
+    print("The stack doesn't have enough crates")
   }
-
 
   return(updated_stack_vector)
 }
 
-# Main function
-get_top_word <- function(stack_arrangement_filename, input_filename){
+# Main function
+get_top_word <- function(stack_arrangement_filename, input_filename, crane = "CrateMover 9000"){
 
   arrangement <- read_arrangement(stack_arrangement_filename)
   procedure <- read_procedure(input_filename)
@@ -63,11 +61,16 @@ get_top_word <- function(stack_arrangement_filename, input_filename){
     n_crates <- procedure$n_crates[i]
     from_stack <- procedure$from_stack[i]
     to_stack <- procedure$to_stack[i]
-
-    for (crate in 1:n_crates) {
-      crate_to_move <- arrangement[[from_stack]] %>% last()
-      arrangement[[from_stack]] <- remove_last_from_stack(arrangement[[from_stack]])
-      arrangement[[to_stack]] <- add_to_stack(arrangement[[to_stack]], crate_to_move)
+    if(crane %in% "CrateMover 9000"){
+      for (crate in 1:n_crates) {
+        crate_to_move <- arrangement[[from_stack]] %>% last()
+        arrangement[[from_stack]] <- remove_n_from_stack(arrangement[[from_stack]], 1)
+        arrangement[[to_stack]] <- add_to_stack(arrangement[[to_stack]], crate_to_move)
+      }
+    }else if(crane %in% "CrateMover 9001"){
+      crates_to_move <- arrangement[[from_stack]] %>% tail(n_crates)
+      arrangement[[from_stack]] <- remove_n_from_stack(arrangement[[from_stack]], n_crates)
+      arrangement[[to_stack]] <- add_to_stack(arrangement[[to_stack]], crates_to_move)
     }
 
   }
@@ -79,3 +82,4 @@ get_top_word <- function(stack_arrangement_filename, input_filename){
 }
 
 get_top_word("day_5_input_part1.txt", "day_5_input.txt")
+get_top_word("day_5_input_part1.txt", "day_5_input.txt", crane = "CrateMover 9001")
