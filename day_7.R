@@ -101,18 +101,31 @@ populate_directory_size <- function(system_structure){
   return(system_structure)
 }
 
-# example_structure <- read_structure("day7_example.txt")
-# example_structure <- populate_directory_size(example_structure)
-# size_vector <- names(example_structure) %>%
-#   sapply(function(x){example_structure[[x]][['size']]})
-#
-# sum(size_vector[size_vector < 100000])
-
-
 real_structure <- read_structure("day_7_input.txt")
 real_structure <- populate_directory_size(real_structure)
 
 size_vector <- names(real_structure) %>%
   sapply(function(x){real_structure[[x]][['size']]})
 
+# Part 1
 sum(size_vector[size_vector < 100000])
+
+
+# Part 2
+filesystem_size <- 70000000
+needed_space <- 30000000
+
+dir_sizes <- tibble(
+  dir_name = names(size_vector),
+  dir_size = unname(size_vector)
+)
+
+used_size <- dir_sizes %>% filter(dir_name %in% "ROOT") %>% pull(dir_size)
+free_space <- filesystem_size - used_size
+space_to_free <- needed_space - free_space
+
+dir_sizes %>%
+  arrange(dir_size) %>%
+  filter(dir_size > space_to_free) %>%
+  pull(dir_size) %>%
+  head(1)
