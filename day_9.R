@@ -62,26 +62,36 @@ get_next_step <- function(H_row, H_col, T_row, T_col){
   return(c(T_row_to, T_col_to))
 }
 
-positions_visited <- function(motions_filename){
+positions_visited <- function(motions_filename, n_knots = 2L){
   series_of_motions <- read_table(motions_filename, col_names = c("direction", "moves"))
 
-  series_of_steps <- get_H_locations(series_of_motions) %>%
-    mutate(T_row_pos = 0L, T_col_pos = 0L)
+  print("Head knot")
+  this_knot_steps <- get_H_locations(series_of_motions) %>%
+    rename(row_pos = H_row_pos, col_pos = H_col_pos)
 
-  for (i in 2:nrow(series_of_steps)) {
-    series_of_steps[i, c("T_row_pos", "T_col_pos")] <- get_next_step(
-      series_of_steps[i, "H_row_pos"],
-      series_of_steps[i, "H_col_pos"],
-      series_of_steps[i-1, "T_row_pos"],
-      series_of_steps[i-1, "T_col_pos"]
-    )
+  for (k in 2:n_knots) {
+    print(paste0("knot ", k))
+
+    next_knot_steps <- this_knot_steps %>%
+      mutate(row_pos = 0L, col_pos = 0L)
+
+    for (i in 2:nrow(next_knot_steps)) {
+      next_knot_steps[i, c("row_pos", "col_pos")] <- get_next_step(
+        this_knot_steps[i, "row_pos"],
+        this_knot_steps[i, "col_pos"],
+        next_knot_steps[i-1, "row_pos"],
+        next_knot_steps[i-1, "col_pos"]
+      )
+    }
+    this_knot_steps <- next_knot_steps
   }
 
-  total_positions <- series_of_steps %>%
-    distinct(T_row_pos, T_col_pos) %>%
+  total_positions <- this_knot_steps %>%
+    distinct(row_pos, col_pos) %>%
     nrow()
 
   return(total_positions)
 }
 
 positions_visited("day_9_input.txt")
+positions_visited("day_9_input.txt", 10L)
