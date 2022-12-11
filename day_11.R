@@ -27,9 +27,11 @@ read_monkey_notes <- function(notes_filename){
   return(list(monkey_attributes, monkey_items))
 }
 
-monkey_business <- function(monkey_data, n_rounds){
+monkey_business <- function(monkey_data, n_rounds, relief = TRUE){
   monkey_attributes <- monkey_data[[1]]
   monkey_items <- monkey_data[[2]]
+
+  common_divisor <- prod(monkey_attributes$test_divisible)
 
   round_stats <- matrix(nrow = n_rounds, ncol = nrow(monkey_attributes))
 
@@ -50,11 +52,22 @@ monkey_business <- function(monkey_data, n_rounds){
         item_destinations <- tibble(
           monkey = inspector,
           starting_worry = starting_items) %>%
-          left_join(monkey_attributes, by = "monkey") %>%
-          mutate(updated_worry = monkey_function(starting_worry),
-                 final_worry = floor(updated_worry/3),
-                 destination_monkey = if_else((final_worry %% test_divisible) == 0,
-                                              monkey_if_true, monkey_if_false))
+          left_join(monkey_attributes, by = "monkey")
+
+        if (relief){
+          item_destinations <- item_destinations %>%
+            mutate(updated_worry = monkey_function(starting_worry),
+                   final_worry = floor(updated_worry/3),
+                   destination_monkey = if_else((final_worry %% test_divisible) == 0,
+                                                monkey_if_true, monkey_if_false))
+
+        }else{
+            item_destinations <- item_destinations %>%
+              mutate(updated_worry = monkey_function(starting_worry),
+                     final_worry = updated_worry %% common_divisor,
+                     destination_monkey = if_else((final_worry %% test_divisible) == 0,
+                                                  monkey_if_true, monkey_if_false))
+        }
 
         # Update item lists
         for (row in 1:nrow(item_destinations)) {
@@ -80,3 +93,4 @@ monkey_business <- function(monkey_data, n_rounds){
 
 monkey_data <- read_monkey_notes("day_11_input.txt")
 monkey_business(monkey_data, 20L)
+monkey_business(monkey_data, 10000L, FALSE)
